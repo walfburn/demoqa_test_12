@@ -1,17 +1,39 @@
 package qa.guru;
 
 import com.codeborne.selenide.Configuration;
+import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import qa.guru.pages.RegistrationPageObject;
 
-import java.io.File;
+import java.util.Locale;
 
 import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Selectors.*;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.open;
 
 public class PracticeFormTest {
+
+    Faker faker = new Faker();
+    Faker fakerRu = new Faker(new Locale("ru"));
+    RegistrationPageObject registrationPageObject = new RegistrationPageObject();
+
+    String file = "123.png";
+    String firstName = fakerRu.name().firstName();
+    String lastName = fakerRu.name().lastName();
+    String userEmail = faker.internet().emailAddress();
+    String dateOfBirth = "11 June,1994";
+    String userNumber = "1234567891";
+    String subject = "Maths";
+    String currentAddress = faker.address().fullAddress();
+    String state = "NCR";
+    String city = "Delhi";
+    String gender = "Male";
+    String hobbie = "Reading";
+    String page = "/automation-practice-form";
+    String fullName = firstName + " " + lastName;
+    String fullLocation = state + " " + city;
+
 
     @BeforeAll
     static void setUp() {
@@ -22,47 +44,34 @@ public class PracticeFormTest {
 
     @Test
     void fillFormTest() {
-        File file = new File("C:\\Users\\Vladimir\\Desktop\\photo_2019-02-11_16-39-08.jpg");
-        String firstName = "VV";
-        String lastName = "SS";
-        String userEmail = "VS@asldalsdjklas.com";
-        String dateOfBirth = "11 June,1994";
-        String userNumber = "1234567899";
-        String subject = "Maths";
-        String currentAddress = "Street 1";
-        String state = "NCR";
-        String city = "Delhi";
 
-        open("/automation-practice-form");
+        registrationPageObject.openPage(page)
+                .setFirstName(firstName)
+                .setLastName(lastName)
+                .setUserEmail(userEmail)
+                .setGender()
+                .setUserNumber(userNumber)
+                .setDateOfBirth("11", "June", "1994")
+                .setSubject(subject)
+                .setHobbies()
+                .uploadPicture()
+                .setCurrentAddress(currentAddress)
+                .setState(state)
+                .setCity(city);
 
-        $("[id=firstName]").setValue(firstName);
-        $("[id=lastName]").setValue(lastName);
-        $("[id=userEmail]").setValue(userEmail);
-        $(byText("Male")).click();
-        $("[id=userNumber]").setValue(userNumber);
-        $("[id=dateOfBirthInput]").click(); // Ввод даты рождения
-        $(".react-datepicker__month-select").selectOption("June");
-        $(".react-datepicker__year-select").selectOption("1994");
-        $("[aria-label$='June 11th, 1994']").click();
-        $("#subjectsInput").setValue(subject).pressEnter();
-        $(byText("Reading")).click();
-        $("#uploadPicture").uploadFile(file);
-        $("[id=currentAddress]").setValue(currentAddress);
-        $("[id=react-select-3-input]").setValue(state).pressEnter();
-        $("[id=react-select-4-input]").setValue(city).pressEnter();
+
         $("#submit").click();
 
-        $(".table-responsive").shouldHave(
-                text(firstName + " " + lastName),
-                text(userEmail),
-                text("Male"),
-                text(userNumber),
-                text(dateOfBirth),
-                text(subject),
-                text("Reading"),
-                text("photo_2019-02-11_16-39-08.jpg"),
-                text(currentAddress),
-                text(state + " " + city)
-        );
+        registrationPageObject.checkResult(fullName, fullName);
+        registrationPageObject.checkResult(userEmail, userEmail);
+        registrationPageObject.checkResult(gender, gender);
+        registrationPageObject.checkResult(userNumber, userNumber);
+        registrationPageObject.checkResult(dateOfBirth, dateOfBirth);
+        registrationPageObject.checkResult(subject, subject);
+        registrationPageObject.checkResult(hobbie, hobbie);
+        registrationPageObject.checkResult(file, file);
+        registrationPageObject.checkResult(currentAddress, currentAddress);
+        registrationPageObject.checkResult(fullLocation, fullLocation);
+
     }
 }
